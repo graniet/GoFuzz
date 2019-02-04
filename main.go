@@ -18,6 +18,7 @@ func main(){
 		fmt.Print(parser.Usage(err))
 		return
 	}
+	fmt.Printf("\n")
 	figure.NewFigure("GoFuzz", "colossal", true).Print()
 	fmt.Printf("\n")
 
