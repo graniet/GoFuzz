@@ -5,8 +5,7 @@ A Request fuzzer written in Go
 
 ```shell
 $ go get github.com/graniet/GoFuzz
-$ cd $GOPATH/src/github.com/graniet/GoFuzz
-$ go build && ./GoFuzz
+$ GoFuzz -h
 ```
 
 Implement example :
