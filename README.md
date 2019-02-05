@@ -8,7 +8,6 @@ $ go get github.com/graniet/GoFuzz
 $ GoFuzz -h
 ```
 
-```
 
 ### How to add a new attack :
 + Create a folder inside payload folder
