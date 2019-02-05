@@ -23,10 +23,11 @@
         "type": "DELETE",
         "url" : "http://127.0.0.1:8080/v1/actions",
         "header":  {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": "Bearer 123456789"
         },
         "body": {
-            "user_token": "23456787654567890daz686Daa"
+            "userId": "1"
         }
     }
 ]
