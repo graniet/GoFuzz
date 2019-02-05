@@ -1,33 +1,26 @@
 [
-{
-         "type": "POST",
-         "url" : "http://127.0.0.1:8080/v1/users",
+    {
+         "type": "DELETE",
+         "url" : "http://127.0.0.1:8080/v1/actions",
          "header":  {
-             "Content-Type": "application/json"
+             "Content-Type": "application/json",
+             "Authorization": "Bearer fefze6878Fezy"
          },
          "body": {
-             "user_token": "23456787654567890daz686Daa"
+             "logged": true
          }
      },
-{
-        "type": "GET",
-        "url" : "http://127.0.0.1:8080/v1/actions",
+     {
+        "type": "POST",
+        "url" : "http://127.0.0.1:8080/v1/users",
         "header":  {
             "Content-Type": "application/json"
         },
         "body": {
-            "user_token": "23456787654567890daz686Daa"
-        }
-    },
-    {
-        "type": "DELETE",
-        "url" : "http://127.0.0.1:8080/v1/actions",
-        "header":  {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer 123456789"
-        },
-        "body": {
-            "userId": "1"
+            "user": {
+                "username": "test",
+                "password": "haxor"
+                }
         }
     }
 ]
