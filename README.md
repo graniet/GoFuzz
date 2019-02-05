@@ -1,5 +1,6 @@
 # GoFuzz
-A simple request fuzzer written in Golang
+
+A Request fuzzer written in Go 
 
 
 ```shell
