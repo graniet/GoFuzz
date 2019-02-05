@@ -27,6 +27,7 @@ func main(){
 	}
 	configuration := fuzzer.GoFuzz{
 		Target: *file,
+		ParamUsed: make(map[string]string),
 		Fuzzer: fuzzer.Vulnerability{
 			Type: *fuzzType,
 		},
