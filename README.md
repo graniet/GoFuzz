@@ -15,6 +15,5 @@ $ GoFuzz -h
 + Create a file with  detector.txt as name (this it's detection pattern)
 
 ```go
-go build
 ./GoFuzz --file 'file with request.txt' --type newType
 ```
