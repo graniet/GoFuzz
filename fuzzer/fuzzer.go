@@ -32,7 +32,12 @@ type Linker struct{
 
 type Result struct{
 	Param string
-	Text string
+	Payload ResultPayload
+}
+
+type ResultPayload struct{
+	PayloadName string
+	PayloadText string
 }
 
 type Flag struct{
@@ -81,16 +86,16 @@ func (fuzz *GoFuzz) LoadMapper() error{
 func (fuzz *GoFuzz) Fuzzing() bool{
 	log.Println("Fuzzing started")
 	for _, request := range fuzz.Mapper{
-		fmt.Printf("-----------\n")
+		fmt.Printf("-----------\n| ")
 		color.Yellow("%s %s\n", request.Type, request.Url)
 		for key, value := range request.Header{
-			fmt.Printf("%s : %s\n", key, value)
+			fmt.Printf("| %s : %s\n", key, value)
 		}
 
 		if len(request.Body) > 0{
 			body := request.Body
 			marsh, _ := json.Marshal(body)
-			fmt.Printf("%s\n", string(marsh))
+			fmt.Printf("| %s\n", string(marsh))
 			fmt.Printf("-----------\n")
 			for idx, value := range body{
 				paramName := idx
@@ -105,28 +110,28 @@ func (fuzz *GoFuzz) Fuzzing() bool{
 						loadingBase = "-"
 					}
 					body[paramName] = payload
-					marsh, _ = json.Marshal(body)
-					req, err := http.NewRequest("POST", request.Url, bytes.NewBuffer(marsh))
+					marsh2, _ := json.Marshal(body)
+					req, err := http.NewRequest(strings.ToUpper(request.Type), request.Url, bytes.NewBuffer(marsh2))
 
 					if err == nil{
-						req.Header.Set("Content-Type", "application/json")
+						for key, value := range request.Header{
+							req.Header.Set(key, value)
+						}
 						client := &http.Client{}
 						resp, err := client.Do(req)
 						if err == nil {
 							defer resp.Body.Close()
-							//fmt.Println("response Status:", resp.Status)
-							//fmt.Println("header: ", resp.Header)
+
 							bodyT, _ := ioutil.ReadAll(resp.Body)
-							//fmt.Println(string(body))
 							if fuzz.Flags.Verbose {
-								fmt.Printf("\033[2K\r%s", string(marsh))
+								fmt.Printf("\033[2K\r[%s] : %s",string(resp.Status), string(marsh2))
 								time.Sleep(300 * time.Millisecond)
 							} else{
 								fmt.Printf("\033[2K\rChecking payloads for parameter %s (%d/%d) %s",paramName, current,len(fuzz.Fuzzer.Payloads), loadingBase)
 								time.Sleep(300 * time.Millisecond)
 							}
-							//fmt.Printf("%s\n", string(marsh))
-							go fuzz.CheckDetector(string(bodyT), &request, paramName)
+
+							go fuzz.CheckDetector(string(bodyT), &request, paramName, payload)
 						}
 					}
 
@@ -136,11 +141,11 @@ func (fuzz *GoFuzz) Fuzzing() bool{
 				body[paramName] = value
 			}
 			if len(request.Results) < 1{
-				color.Blue("Results: (0) results found")
+				fmt.Println("Results: (0) results found")
 			} else{
 				fmt.Println("Results: (" + strconv.Itoa(len(request.Results)) + ") results found")
 				for _, detector := range request.Results{
-					fmt.Printf("Possible %s found in %s with %s\n", fuzz.Fuzzer.Type, detector.Param, detector.Text)
+					color.Green("Possible %s found in %s with %s\n", strings.ToUpper(fuzz.Fuzzer.Type), detector.Param, detector.Payload.PayloadName)
 				}
 			}
 		}
@@ -149,17 +154,21 @@ func (fuzz *GoFuzz) Fuzzing() bool{
 	return true
 }
 
-func (fuzz *GoFuzz) CheckDetector(source string, request *Linker, param string){
+func (fuzz *GoFuzz) CheckDetector(source string, request *Linker, param string, payload string){
 	for _, detector := range fuzz.Fuzzer.Detector{
 		if strings.Contains(strings.ToLower(source), strings.ToLower(detector)) {
 			exist := false
+			PayloadReq := ResultPayload{}
+			PayloadReq.PayloadName = payload
+			PayloadReq.PayloadText = strings.TrimSpace(detector)
+
 			for _, detect := range request.Results{
-				if detect.Text == detector && detect.Param == param{
+				if detect.Payload.PayloadText == strings.TrimSpace(detector) && detect.Param == param{
 					exist = true
 				}
 			}
 			if exist == false {
-				request.Results = append(request.Results, Result{Param: param, Text: detector})
+				request.Results = append(request.Results, Result{Param: param, Payload: PayloadReq})
 			}
 		}
 	}

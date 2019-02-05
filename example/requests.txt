@@ -1,12 +1,32 @@
 [
-    {
+{
+         "type": "POST",
+         "url" : "http://127.0.0.1:8080/v1/users",
+         "header":  {
+             "Content-Type": "application/json"
+         },
+         "body": {
+             "user_token": "23456787654567890daz686Daa"
+         }
+     },
+{
         "type": "GET",
-        "url" : "http://localhost:8080/v1/users/2",
+        "url" : "http://127.0.0.1:8080/v1/actions",
         "header":  {
             "Content-Type": "application/json"
         },
         "body": {
-            "user_token": "88777e22803a1684bc9b9bd9711262fc"
+            "user_token": "23456787654567890daz686Daa"
+        }
+    },
+    {
+        "type": "DELETE",
+        "url" : "http://127.0.0.1:8080/v1/actions",
+        "header":  {
+            "Content-Type": "application/json"
+        },
+        "body": {
+            "user_token": "23456787654567890daz686Daa"
         }
     }
 ]

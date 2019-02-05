@@ -7,7 +7,7 @@ import (
 func main(){
 
 	linker := fuzzer.Linker{}
-	linker.Type = "GET"
+	linker.Type = "DELETE"
 	linker.Url = "http://localhost:8080/v1/users/2"
 	linker.Header = map[string]string{
 		"Content-Type": "application/json",
