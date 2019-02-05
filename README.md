@@ -56,3 +56,13 @@ func main(){
 	Fuzz.Fuzzing()
 }
 ```
+
+### How to add a new attack :
++ Create a folder inside payload folder
++ Create a file with same name of folder with .txt extension (this it's injections pattern)
++ Create a file with  detector.txt as name (this it's detection pattern)
+
+```go
+go build
+./GoFuzz --file 'file with request.txt' --type newType
+```
