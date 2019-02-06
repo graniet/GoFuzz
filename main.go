@@ -25,6 +25,7 @@ func main(){
 	Flag := fuzzer.Flag{
 		Verbose: *printPayload,
 	}
+
 	configuration := fuzzer.GoFuzz{
 		Target: *file,
 		ParamUsed: make(map[string]string),
