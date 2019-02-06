@@ -24,6 +24,7 @@ type GoFuzz struct{
 	Fuzzer Vulnerability
 	ParamUsed map[string]string
 	Flags Flag
+	CustomPayload string
 }
 
 type Linker struct{
@@ -82,14 +83,22 @@ func (fuzz *GoFuzz) Run(){
 		return
 	}
 
-	err := fuzz.Fuzzer.LoadPayload()
-	if err != nil{
-		log.Println(err.Error())
-		return
+	if fuzz.CustomPayload != ""{
+		err := fuzz.Fuzzer.CustomPayload(fuzz.CustomPayload)
+		if err != nil{
+			log.Println(err.Error())
+			return
+		}
+	} else{
+		err := fuzz.Fuzzer.LoadPayload()
+		if err != nil{
+			log.Println(err.Error())
+			return
+		}
 	}
 
 	log.Println("Loading a request file...")
-	err = fuzz.LoadMapper()
+	err := fuzz.LoadMapper()
 	log.Println(strconv.Itoa(len(fuzz.MapperComplex)) + " requests object loaded.")
 	fuzz.Fuzzing()
 	if err != nil{
@@ -183,7 +192,11 @@ func (fuzz *GoFuzz) Fuzzing() error{
 		} else{
 			fmt.Println("\nResults: (" + strconv.Itoa(len(request.Results)) + ") results found")
 			for _, detector := range request.Results{
-				color.Green("Possible %s found in %s with %s\n", strings.ToUpper(fuzz.Fuzzer.Type), detector.Param, detector.Payload.PayloadName)
+				if fuzz.CustomPayload == "" {
+					color.Green("Possible %s found in %s with %s\n", strings.ToUpper(fuzz.Fuzzer.Type), detector.Param, detector.Payload.PayloadName)
+				} else{
+					color.Green("Possible custom found in %s with %s\n", detector.Param, detector.Payload.PayloadName)
+				}
 			}
 		}
 	}
