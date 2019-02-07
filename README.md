@@ -13,7 +13,7 @@ Arguments:
   -r  --requests  File to API requests dump.
   -t  --type      Type of fuzzing: SQL, XSS
   -v  --verbose   Print payload verbose in checking process
-  -c  --custom   Custom payload file
+  -c  --custom    Custom payload file
   -p  --postman   Use postman format
 ```
 
