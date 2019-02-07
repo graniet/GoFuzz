@@ -6,6 +6,15 @@
 ```shell
 $ go get github.com/graniet/GoFuzz
 $ GoFuzz -h
+
+Arguments:
+
+  -h  --help      Print help information
+  -r  --requests  File to API requests dump.
+  -t  --type      Type of fuzzing: SQL, XSS
+  -v  --verbose   Print payload verbose in checking process
+  -c  --payload   Custom payload file
+  -p  --postman   Use postman format
 ```
 
 #### Custom payload :
