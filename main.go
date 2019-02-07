@@ -13,7 +13,7 @@ func main(){
 	file := parser.String("r", "requests", &argparse.Options{Required:true, Help:"File to API requests dump."})
 	fuzzType := parser.String("t", "type", &argparse.Options{Required: false, Help: "Type of fuzzing: SQL, XSS"})
 	printPayload := parser.Flag("v", "verbose", &argparse.Options{Required:false, Help:"Print payload verbose in checking process"})
-	customPayload := parser.String("c", "payload", &argparse.Options{Required:false, Help:"Custom payload file"})
+	customPayload := parser.String("c", "custom", &argparse.Options{Required:false, Help:"Custom payload file"})
 	formatRequest := parser.Flag("p", "postman", &argparse.Options{Required: false, Help:"Use postman format"})
 
 	err := parser.Parse(os.Args)
