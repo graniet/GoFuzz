@@ -187,18 +187,6 @@ func (fuzz *GoFuzz) Fuzzing() error{
 				}
 			}
 		}
-		if len(request.Results) < 1{
-			fmt.Println("\nResults: (0) results found")
-		} else{
-			fmt.Println("\nResults: (" + strconv.Itoa(len(request.Results)) + ") results found")
-			for _, detector := range request.Results{
-				if fuzz.CustomPayload == "" {
-					color.Green("Possible %s found in %s with %s\n", strings.ToUpper(fuzz.Fuzzer.Type), detector.Param, detector.Payload.PayloadName)
-				} else{
-					color.Green("Possible custom found in %s with %s\n", detector.Param, detector.Payload.PayloadName)
-				}
-			}
-		}
 	}
 	log.Printf("Fuzzing finish.")
 	return nil
@@ -218,6 +206,7 @@ func (fuzz *GoFuzz) CheckDetector(source string, request *LinkerV2, param string
 				}
 			}
 			if exist == false {
+				color.Green("\033[2K\rResults found in '%s' with payload `%s` => %s\n",param,  PayloadReq.PayloadName, PayloadReq.PayloadText)
 				request.Results = append(request.Results, Result{Param: param, Payload: PayloadReq})
 			}
 		}
