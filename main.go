@@ -10,10 +10,11 @@ import (
 
 func main(){
 	parser := argparse.NewParser("Gofuzz", "API Rest fuzzer written in Golang")
-	file := parser.String("f", "file", &argparse.Options{Required:true, Help:"File to API requests dump."})
+	file := parser.String("r", "requests", &argparse.Options{Required:true, Help:"File to API requests dump."})
 	fuzzType := parser.String("t", "type", &argparse.Options{Required: false, Help: "Type of fuzzing: SQL, XSS"})
 	printPayload := parser.Flag("v", "verbose", &argparse.Options{Required:false, Help:"Print payload verbose in checking process"})
-	customPayload := parser.String("p", "payload", &argparse.Options{Required:false, Help:"Custom payload file"})
+	customPayload := parser.String("c", "payload", &argparse.Options{Required:false, Help:"Custom payload file"})
+	formatRequest := parser.Flag("p", "postman", &argparse.Options{Required: false, Help:"Format for requests file : postman "})
 
 	err := parser.Parse(os.Args)
 	if err != nil{
@@ -42,6 +43,7 @@ func main(){
 		},
 		Flags:Flag,
 		CustomPayload: *customPayload,
+		FormatPostMan: *formatRequest,
 	}
 
 	configuration.Run()

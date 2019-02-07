@@ -21,36 +21,12 @@ type GoFuzz struct{
 	Target string
 	Mapper []Linker
 	MapperComplex []LinkerV2
+	MapperPostMan FormatPostMan
 	Fuzzer Vulnerability
 	ParamUsed map[string]string
 	Flags Flag
 	CustomPayload string
-}
-
-type Linker struct{
-	Type string `json:"type"`
-	Url string `json:"url"`
-	Header map[string]string `json:"header"`
-	Body map[string]string `json:"body"`
-	Results []Result
-}
-
-type LinkerV2 struct{
-	Type string `json:"type"`
-	Url string `json:"url"`
-	Header map[string]string `json:"header"`
-	Body interface{} `json:"body"`
-	Results []Result
-}
-
-type Result struct{
-	Param string
-	Payload ResultPayload
-}
-
-type ResultPayload struct{
-	PayloadName string
-	PayloadText string
+	FormatPostMan bool
 }
 
 type Flag struct{
@@ -61,9 +37,39 @@ type Flag struct{
 func (fuzz *GoFuzz) LoadMapper() (error){
 	reader,_ := ioutil.ReadFile(fuzz.Target)
 	err := json.Unmarshal(reader, &fuzz.MapperComplex)
-	if err != nil{
+	if err != nil {
 		return errors.New(err.Error())
 	}
+	return nil
+}
+
+func (fuzz *GoFuzz) LoadPostManRequests() (error){
+	reader,_ := ioutil.ReadFile(fuzz.Target)
+	err := json.Unmarshal(reader, &fuzz.MapperPostMan)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	if len(fuzz.MapperPostMan.Requests) > 0{
+		for _, value := range fuzz.MapperPostMan.Requests{
+			linkerTpl := LinkerV2{}
+			linkerTpl.Type = value.Type
+			if value.Body.(string) != "" {
+				json.Unmarshal([]byte(value.Body.(string)), &linkerTpl.Body)
+			}
+			linkerTpl.Url = value.Url
+			linkerTpl.Header = make(map[string]string)
+
+			if len(value.Header) > 0{
+				for _, head := range value.Header{
+					linkerTpl.Header[head.Key] = head.Value
+				}
+			}
+
+			fuzz.MapperComplex = append(fuzz.MapperComplex, linkerTpl)
+		}
+	}
+
 	return nil
 }
 
@@ -98,9 +104,21 @@ func (fuzz *GoFuzz) Run(){
 	}
 
 	log.Println("Loading a request file...")
-	err := fuzz.LoadMapper()
+	if !fuzz.FormatPostMan {
+		err := fuzz.LoadMapper()
+		if err != nil{
+			log.Println(err.Error())
+			return
+		}
+	} else{
+		err := fuzz.LoadPostManRequests()
+		if err != nil{
+			log.Println(err.Error())
+			return
+		}
+	}
 	log.Println(strconv.Itoa(len(fuzz.MapperComplex)) + " requests object loaded.")
-	fuzz.Fuzzing()
+	err := fuzz.Fuzzing()
 	if err != nil{
 		log.Println(err.Error())
 		return
@@ -126,11 +144,6 @@ func (fuzz *GoFuzz) Foreach(element map[string]interface{}, preface string){
 
 func (fuzz *GoFuzz) Fuzzing() error{
 
-	reader,_ := ioutil.ReadFile(fuzz.Target)
-	err := json.Unmarshal(reader, &fuzz.MapperComplex)
-	if err != nil{
-		return errors.New(err.Error())
-	}
 	log.Println("Fuzzing started")
 	for _, request := range fuzz.MapperComplex{
 		fmt.Printf("-----------\n| ")
@@ -138,12 +151,15 @@ func (fuzz *GoFuzz) Fuzzing() error{
 		for key, value := range request.Header{
 			fmt.Printf("| %s : %s\n", key, value)
 		}
+		if request.Body == nil{
+			fmt.Printf("| No data found\n")
+			continue
+		}
 		object := request.Body.(map[string]interface{})
 		if len(object) > 0{
 			fuzz.Foreach(object, "")
 			marsh, _ := json.Marshal(object)
 			fmt.Printf("| %s\n", string(marsh))
-			fmt.Printf("-----------\n")
 			for _, parameters := range fuzz.ParamUsed{
 				loadingBase := "-"
 				current := 1
@@ -169,10 +185,10 @@ func (fuzz *GoFuzz) Fuzzing() error{
 
 							bodyT, _ := ioutil.ReadAll(resp.Body)
 							if fuzz.Flags.Verbose {
-								fmt.Printf("\033[2K\r[%s] : %s",string(resp.Status), string(value))
+								fmt.Printf("|\033[2K\r| [%s] : %s",string(resp.Status), string(value))
 								time.Sleep(300 * time.Millisecond)
 							} else{
-								fmt.Printf("\033[2K\rChecking payloads for parameter %s (%d/%d) %s",parameters, current,len(fuzz.Fuzzer.Payloads), loadingBase)
+								fmt.Printf("|\033[2K\r| Checking payloads for parameter %s (%d/%d) %s",parameters, current,len(fuzz.Fuzzer.Payloads), loadingBase)
 								time.Sleep(300 * time.Millisecond)
 							}
 
@@ -187,6 +203,8 @@ func (fuzz *GoFuzz) Fuzzing() error{
 				}
 			}
 		}
+		fmt.Printf("|\033[2K\r")
+		fmt.Printf("-----------\n")
 	}
 	log.Printf("Fuzzing finish.")
 	return nil
@@ -206,7 +224,7 @@ func (fuzz *GoFuzz) CheckDetector(source string, request *LinkerV2, param string
 				}
 			}
 			if exist == false {
-				color.Green("\033[2K\rResults found in '%s' with payload `%s` => %s\n",param,  PayloadReq.PayloadName, PayloadReq.PayloadText)
+				color.Green("\033[2K\r| Results found in '%s' with payload `%s` => %s\n",param,  PayloadReq.PayloadName, PayloadReq.PayloadText)
 				request.Results = append(request.Results, Result{Param: param, Payload: PayloadReq})
 			}
 		}
