@@ -25,5 +25,5 @@ example/payloads_custom/
 
 
 ```shell
-$ GoFuzz -f example/requests.txt -t xss -c "example/payloads_custom/payload.txt"
+$ GoFuzz -r example/requests.txt -t xss -c "example/payloads_custom/payload.txt"
 ```
